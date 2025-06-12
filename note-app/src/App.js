@@ -228,7 +228,7 @@ function App() {
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      background: "#f2f2f2",
+      background: "#1e1e1e",
       fontFamily: "'Segoe UI', sans-serif"
     }}>
       {notification && (
@@ -236,12 +236,12 @@ function App() {
           position: 'fixed',
           top: '20px',
           right: '20px',
-          background: notification.type === 'success' ? '#4CAF50' :
-                     notification.type === 'warning' ? '#ff9800' : '#f44336',
+          background: notification.type === 'success' ? '#2e7d32' :
+                     notification.type === 'warning' ? '#ed6c02' : '#d32f2f',
           color: 'white',
           padding: '20px',
           borderRadius: '10px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
           zIndex: 1000,
           maxWidth: '400px'
         }}>
@@ -284,29 +284,32 @@ function App() {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
+          background: 'rgba(0,0,0,0.7)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           zIndex: 1000
         }}>
           <div style={{
-            background: 'white',
+            background: '#2d2d2d',
             padding: '20px',
             borderRadius: '10px',
             maxWidth: '400px',
-            width: '90%'
+            width: '90%',
+            color: '#e0e0e0'
           }}>
-            <h3 style={{ marginTop: 0 }}>确认清空</h3>
+            <h3 style={{ marginTop: 0, color: '#e0e0e0' }}>确认清空</h3>
             <p>请确认是否要清空所有笔记？此操作不可撤销。</p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button
                 onClick={() => setConfirmingClear(false)}
                 style={{
                   padding: '8px 16px',
-                  border: '1px solid #ccc',
+                  border: '1px solid #404040',
                   borderRadius: '5px',
-                  background: '#fff'
+                  background: '#383838',
+                  color: '#e0e0e0',
+                  cursor: 'pointer'
                 }}
               >
                 取消
@@ -316,7 +319,7 @@ function App() {
                 disabled={submitting}
                 style={{
                   padding: '8px 16px',
-                  background: '#f44336',
+                  background: '#d32f2f',
                   color: 'white',
                   border: 'none',
                   borderRadius: '5px',
@@ -331,14 +334,15 @@ function App() {
       )}
 
       <div style={{
-        background: "#fff",
+        background: "#2d2d2d",
         padding: "30px",
         borderRadius: "20px",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
         width: "90%",
-        maxWidth: "600px"
+        maxWidth: "600px",
+        color: "#e0e0e0"
       }}>
-        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>📝 区块链记事本</h2>
+        <h2 style={{ textAlign: "center", marginBottom: "20px", color: "#e0e0e0" }}>📝 区块链记事本</h2>
 
         <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
           <input
@@ -351,9 +355,11 @@ function App() {
               padding: "12px 16px",
               fontSize: "16px",
               borderRadius: "10px",
-              border: "1px solid #ccc",
+              border: "1px solid #404040",
               outline: "none",
-              background: "#f9f9f9"
+              background: "#3d3d3d",
+              color: "#e0e0e0",
+              caretColor: "#e0e0e0"
             }}
           />
           <button
@@ -361,7 +367,7 @@ function App() {
             disabled={submitting}
             style={{
               padding: "12px 20px",
-              backgroundColor: submitting ? "#aaa" : "#4CAF50",
+              backgroundColor: submitting ? "#555" : "#2e7d32",
               color: "#fff",
               border: "none",
               borderRadius: "10px",
@@ -371,13 +377,12 @@ function App() {
           >
             {submitting ? "提交中…" : "提交"}
           </button>
-          {/* 添加清空按钮 - 对所有用户可见 */}
           <button
             onClick={handleClear}
             disabled={submitting}
             style={{
               padding: "12px 20px",
-              backgroundColor: "#f44336",
+              backgroundColor: "#d32f2f",
               color: "#fff",
               border: "none",
               borderRadius: "10px",
@@ -400,18 +405,19 @@ function App() {
                 <li
                   key={i}
                   style={{
-                    background: "#f7f7f7",
+                    background: "#383838",
                     padding: "12px 16px",
                     marginBottom: "10px",
                     borderRadius: "8px",
-                    border: "1px solid #e0e0e0"
+                    border: "1px solid #404040",
+                    color: "#e0e0e0"
                   }}
                 >
                   {n}
                 </li>
               ))}
               {notes.length === 0 && (
-                <li style={{ textAlign: "center", color: "#999" }}>暂无记录</li>
+                <li style={{ textAlign: "center", color: "#888" }}>暂无记录</li>
               )}
             </ul>
           )}
