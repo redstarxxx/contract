@@ -1,1 +1,3 @@
 hardhat.config.js
+./cache
+./artifacts
