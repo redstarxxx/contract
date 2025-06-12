@@ -1,20 +1,29 @@
+import { useEffect, useState } from "react";
 import { Grid } from '@mui/material';
 
 export default function SupplyComponent({ contract }) {
 
-  // const totalSupply = useCall({ contract, method: 'name', args: ["0xc15a7d022121bebd01912cbf99647c7081001c85e5ffe7b23509b4edf4489ec7"] });
-  // const maxSupply = useCall({ contract, method: 'MAX_TO_MINT', args: ["0xc15a7d022121bebd01912cbf99647c7081001c85e5ffe7b23509b4edf4489ec7"]});
-  // const totalSupplyFormatted = totalSupply ? utils.formatEther(totalSupply.value.toString()) : '...';
-  // const maxSupplyFormatted = maxSupply ? utils.formatEther(maxSupply.value.toString()) : '...';
-
-  const totalSupply = contract.MAX_TO_MINT()
+  const [ownerAddress, setAddress] = useState([]);
+  console.error("contract=", contract);
+  
+  const initContract = async () => {
+        try {
+          const ownerAddress = await contract.owner();
+          setAddress(ownerAddress);
+        } catch (err) {
+          console.error("contract error", err);
+        } finally {
+        }
+      };
+    initContract();
 
   const centeredText = { textAlign: 'center' };
+  console.error("ownerAddress=", ownerAddress);
 
   return (
     <Grid item xs={12}>
       <h3 style={centeredText}>
-        Total Supply: {totalSupply}
+        OwnerAddress=={ownerAddress}
       </h3>
     </Grid>
   );
