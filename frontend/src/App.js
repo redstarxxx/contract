@@ -1,4 +1,4 @@
-import { Button, Grid, Card } from '@mui/material';
+import { Grid, Card } from '@mui/material';
 import { Box } from '@mui/system';
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
@@ -26,7 +26,6 @@ const styles = {
 
 function App() {
 
-  const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState(null);
 
   useEffect(() => {
@@ -48,8 +47,6 @@ function App() {
         setContract(instance);
       } catch (err) {
         console.error("初始化失败:", err);
-      } finally {
-        setLoading(false);
       }
     };
     init();

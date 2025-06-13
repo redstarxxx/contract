@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Grid } from '@mui/material';
-import { ethers } from "ethers";
 
 export default function SupplyComponent({ contract }) {
 
@@ -9,7 +8,7 @@ export default function SupplyComponent({ contract }) {
 
 
   // console.log("contract=", contract);
-  
+
   const initContract = async () => {
         try {
           const totalTemp = await contract.totalSupply();
