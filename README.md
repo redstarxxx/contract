@@ -6,6 +6,7 @@
 
 ```bash
 # 安装依赖
+cd hardhat
 npm install
 npm install @openzeppelin/contracts
 
@@ -13,6 +14,8 @@ npm install @openzeppelin/contracts
 cp hardhat.config.sample.js hardhat.config.js
 
 # 进入 note-app 目录创建软链接（重要！）
+cd ..
+# 需要初始化 react
 cd note-app
 chmod +x lns.sh    # 赋予脚本执行权限
 ./lns.sh          # 执行脚本创建软链接
