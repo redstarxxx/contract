@@ -4,19 +4,17 @@ import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 
 import SupplyComponent from './SupplyComponent';
-
+import MintingComponent from './MintingComponent';
 import abiFile from './BiXiaERC20//BiXiaERC20.json';
 
 // import abiFile from './NoteContract//Note611.json';
-
-const errorMsg = '请先从水龙头获取测试代币: https://faucet.moonbeam.network';
+// const errorMsg = '请先从水龙头获取测试代币: https://faucet.moonbeam.network';
 
 // 配置区
-const contractAddress = "0x46Ae6B8DF20c92004C73A29BC72D7DfCA9E4FC74"; // 替换为你的合约地址
+const contractAddress = "0x8Ac31b93C32C18792E5C68c5f8012427b035Bdda"; // 替换为你的合约地址
 const RPC_URL = "https://rpc.api.moonbase.moonbeam.network";
 const rawKey = "0xc15a7d022121bebd01912cbf99647c7081001c85e5ffe7b23509b4edf4489ec7" || "";
 const PRIVATE_KEY = rawKey.startsWith("0x") ? rawKey : "0x" + rawKey;
-
 
 const styles = {
   box: { minHeight: '100vh', backgroundColor: '#1b3864' },
@@ -28,26 +26,26 @@ const styles = {
 
 function App() {
 
-  const [contract, setContract] = useState(null);
-  const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [contract, setContract] = useState(null);
 
   useEffect(() => {
     const init = async () => {
       try {
+        //获取节点请求
         const provider = new ethers.JsonRpcProvider(RPC_URL);
+        //私钥登录节点
         const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+
         const instance = new ethers.Contract(contractAddress, abiFile.abi, wallet);
 
         // 检查账户余额
         const balance = await provider.getBalance(wallet.address);
-        setBalance(balance);
-
         if (balance === 0n) {
           console.error("账户余额不足:");
         }
+        console.log("账户余额=", balance);
         setContract(instance);
-        
       } catch (err) {
         console.error("初始化失败:", err);
       } finally {
@@ -78,6 +76,7 @@ function App() {
         <Card sx={styles.card}>
           <h1 style={styles.alignCenter}>Mint Your Token!</h1>
           <SupplyComponent contract={contract} />
+          <MintingComponent contract={contract} />
         </Card>
       </Grid>
     </Box>
