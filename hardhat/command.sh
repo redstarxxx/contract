@@ -142,10 +142,11 @@ while true; do
     echo -e "$(format_menu_item "6. 远程部署(Moonbase)" "$DEPLOY_STATUS")"
     echo -e "$(format_menu_item "7. 交互式调用(脚本)" "$INTERACT_STATUS")"
     echo "8. 交互式控制台"
+    echo "9. 控制台常用命令参考"
     echo "0. 退出"
     echo -e "${YELLOW}===========================${NC}"
 
-    read -p "请选择操作 [0-8]: " choice
+    read -p "请选择操作 [0-9]: " choice
     echo
 
     case $choice in
@@ -194,6 +195,37 @@ while true; do
             echo -e "${YELLOW}使用 .exit 退出控制台${NC}"
             echo
             execute_command "npx hardhat console --network moonbase"
+            ;;
+        9)
+            echo -e "${BLUE}=== 常用控制台命令参考 ===${NC}"
+            echo -e "${YELLOW}1. 通过私钥获取钱包：${NC}"
+            echo -e "const privateKey = \"你的私钥\";"
+            echo -e "const wallet = new ethers.Wallet(privateKey, ethers.provider);"
+            echo -e "console.log(\"钱包地址:\", wallet.address);"
+            echo
+            echo -e "${YELLOW}2. 获取账户余额：${NC}"
+            echo -e "const balance = await ethers.provider.getBalance(\"账户地址\");"
+            echo -e "console.log(\"余额:\", ethers.utils.formatEther(balance));"
+            echo
+            echo -e "${YELLOW}3. 发送ETH交易：${NC}"
+            echo -e "const tx = await wallet.sendTransaction({"
+            echo -e "  to: \"接收地址\","
+            echo -e "  value: ethers.utils.parseEther(\"0.1\")"
+            echo -e "});"
+            echo
+            echo -e "${YELLOW}4. 获取合约实例：${NC}"
+            echo -e "const contract = await ethers.getContractAt(\"合约名\", \"合约地址\");"
+            echo
+            echo -e "${YELLOW}5. 链接钱包到合约：${NC}"
+            echo -e "const contractWithSigner = contract.connect(wallet);"
+            echo
+            echo -e "${YELLOW}6. 查询网络信息：${NC}"
+            echo -e "const network = await ethers.provider.getNetwork();"
+            echo -e "console.log(\"Chain ID:\", network.chainId);"
+            echo
+            echo -e "${YELLOW}7. 获取Gas价格：${NC}"
+            echo -e "const gasPrice = await ethers.provider.getGasPrice();"
+            echo -e "console.log(\"Gas价格:\", ethers.utils.formatUnits(gasPrice, \"gwei\"), \"gwei\");"
             ;;
         0)
             echo -e "${GREEN}感谢使用，再见！${NC}"
