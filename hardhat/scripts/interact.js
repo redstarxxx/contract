@@ -16,10 +16,20 @@ async function askQuestion(query) {
 }
 
 function parseArg(val, type) {
-  if (type.startsWith("uint") || type.startsWith("int")) return BigInt(val);
+  if (type.startsWith("uint") || type.startsWith("int")) {
+    const hre = require("hardhat");
+    // 对于 uint256/int256 类型，默认按照代币精度(18位)处理
+    if (type === "uint256" || type === "int256") {
+      // 不管是整数还是小数，都用 parseUnits 处理
+      return hre.ethers.parseUnits(val, 18);
+    }
+    // 其他数字类型保持原样
+    return BigInt(val);
+  }
   if (type === "bool") return val.toLowerCase() === "true";
   return val;
 }
+
 
 async function main() {
   try {
@@ -36,7 +46,9 @@ async function main() {
       return;
     }
 
-    const [user] = await ethers.getSigners();
+    // 使用 hardhat 的 ethers 实例
+    const hre = require("hardhat");
+    const [user] = await hre.ethers.getSigners();
     console.log("使用账户与合约交互:", user.address);
 
     const artifactPath = path.join(__dirname, `../artifacts/contracts/${contractName}.sol/${contractName}.json`);
