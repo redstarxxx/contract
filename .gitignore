@@ -12,7 +12,6 @@
 # Hardhat specific
 **/artifacts
 **/cache
-**/hardhat.config.js
 **/package-lock.json
 **/package.json
 

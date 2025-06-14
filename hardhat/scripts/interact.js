@@ -34,7 +34,7 @@ function parseArg(val, type) {
 async function main() {
   try {
     // 获取合约名称和地址
-    const contractName = await askQuestion("请输入合约名称(例如 MintableERC20): ");
+    const contractName = await askQuestion("请输入合约名称(例如 USDT): ");
     if (!contractName.trim()) {
       console.log("未输入合约名称，退出程序...");
       return;
