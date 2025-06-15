@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: MIT
+// Contract address: 0x3044D7DB99Adc1Ed71cCFfC0D5de973C085FAF55
+// Constructor args: HSNewNFT HNN
+// Deployer address: 0xB8a71bdE974d16c9D2189919C64C6c8FEB402298
+
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";

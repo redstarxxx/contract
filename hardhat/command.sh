@@ -6,7 +6,22 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 GRAY='\033[0;90m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
+
+# 从.env文件获取部署账户地址
+DEPLOYER_ADDRESS=""
+if [ -f ".env" ]; then
+    PRIVATE_KEY=$(grep PRIVATE_KEY .env | cut -d '=' -f2 | tr -d '"' | tr -d ' ')
+    if [ ! -z "$PRIVATE_KEY" ]; then
+        # 使用node来获取地址
+        DEPLOYER_ADDRESS=$(node -e "
+            const ethers = require('ethers');
+            const wallet = new ethers.Wallet('$PRIVATE_KEY');
+            console.log(wallet.address);
+        " 2>/dev/null)
+    fi
+fi
 
 # 获取脚本文件路径的函数
 get_script_path() {
@@ -80,6 +95,90 @@ format_menu_item() {
     fi
 }
 
+# 验证合约的函数
+verify_contract() {
+    echo -e "${CYAN}===== 合约验证 =====${NC}"
+    echo -e "${YELLOW}请输入合约地址:${NC}"
+    read -p "" contract_address
+
+    if [ -z "$contract_address" ]; then
+        echo -e "${RED}错误: 合约地址不能为空${NC}"
+        return 1
+    fi
+
+    # 列出已编译的合约
+    echo -e "\n${YELLOW}选择要验证的合约:${NC}"
+    local contracts=()
+    local i=1
+
+    if [ -d "artifacts/contracts" ]; then
+        for dir in artifacts/contracts/*/; do
+            name=$(basename "$dir")
+            name=${name%.sol}
+            echo "$i) $name"
+            contracts+=("$name")
+            ((i++))
+        done
+
+        read -p "请选择合约编号: " contract_choice
+
+        if ! [[ "$contract_choice" =~ ^[0-9]+$ ]] || [ "$contract_choice" -lt 1 ] || [ "$contract_choice" -gt ${#contracts[@]} ]; then
+            echo -e "${RED}错误: 无效的选择${NC}"
+            return 1
+        fi
+
+        local contract_name=${contracts[$((contract_choice-1))]}
+
+        echo -e "\n${YELLOW}请输入构造函数参数 (如有多个参数请用空格分隔):${NC}"
+        read -p "" constructor_args
+
+        # 获取部署者地址
+        if [ ! -z "$DEPLOYER_ADDRESS" ]; then
+            echo -e "\n${CYAN}检测到部署者地址: $DEPLOYER_ADDRESS${NC}"
+            echo -e "${YELLOW}是否使用此地址? [Y/n]:${NC}"
+            read -p "" use_detected_address
+            if [[ $use_detected_address =~ ^[Nn]$ ]]; then
+                echo -e "${YELLOW}请输入部署者地址 (直接回车则忽略):${NC}"
+                read -p "" deployer_address
+            else
+                deployer_address=$DEPLOYER_ADDRESS
+            fi
+        else
+            echo -e "\n${YELLOW}请输入部署者地址 (直接回车则忽略):${NC}"
+            read -p "" deployer_address
+        fi
+
+        if [ -z "$constructor_args" ]; then
+            if [ ! -z "$deployer_address" ]; then
+                echo -e "${BLUE}正在验证合约 (仅部署者地址)...${NC}"
+                execute_command "npx hardhat verify --network moonbase $contract_address \"$deployer_address\""
+            else
+                echo -e "${BLUE}正在验证合约 (无参数)...${NC}"
+                execute_command "npx hardhat verify --network moonbase $contract_address"
+            fi
+        else
+            # 构造函数参数数组
+            local params=()
+            for arg in $constructor_args; do
+                params+=("\"$arg\"")
+            done
+
+            # 如果有部署者地址，添加到参数末尾
+            if [ ! -z "$deployer_address" ]; then
+                params+=("\"$deployer_address\"")
+            fi
+
+            # 构建并执行验证命令
+            echo -e "${BLUE}正在验证合约...${NC}"
+            local verify_cmd="npx hardhat verify --network moonbase $contract_address ${params[*]}"
+            execute_command "$verify_cmd"
+        fi
+    else
+        echo -e "${RED}错误: 未找到已编译的合约${NC}"
+        return 1
+    fi
+}
+
 # 执行命令前检查文件
 can_execute() {
     local file="$1"
@@ -131,6 +230,48 @@ clear
 # 初始检查所有文件
 check_all_files
 
+# 部署合约的函数
+deploy_contract() {
+    local network=$1
+    if [ "$network" = "local" ]; then
+        network_name="localhost"
+        echo -e "${YELLOW}准备部署到本地网络...${NC}"
+    else
+        network_name="moonbase"
+        echo -e "${YELLOW}准备部署到 Moonbase 测试网...${NC}"
+    fi
+
+    if can_execute "$SCRIPT_DEPLOY"; then
+        list_contracts
+        execute_command "npx hardhat run $SCRIPT_DEPLOY --network $network_name"
+
+        if [ "$network" = "moonbase" ]; then
+            echo -e "${CYAN}是否要验证合约? [y/N]${NC}"
+            read -p "" verify_choice
+            if [[ $verify_choice =~ ^[Yy]$ ]]; then
+                echo -e "${YELLOW}请输入合约地址:${NC}"
+                read -p "" contract_address
+                echo -e "${YELLOW}请输入合约名称(e.g., MyNFT):${NC}"
+                read -p "" contract_name
+                echo -e "${YELLOW}请输入代币符号(e.g., MNFT):${NC}"
+                read -p "" token_symbol
+
+                if [ -z "$DEPLOYER_ADDRESS" ]; then
+                    echo -e "${YELLOW}请输入部署账户地址:${NC}"
+                    read -p "" DEPLOYER_ADDRESS
+                fi
+
+                if [ ! -z "$contract_address" ] && [ ! -z "$contract_name" ] && [ ! -z "$token_symbol" ] && [ ! -z "$DEPLOYER_ADDRESS" ]; then
+                    echo -e "${BLUE}正在验证合约...${NC}"
+                    execute_command "npx hardhat verify --network moonbase $contract_address \"$contract_name\" \"$token_symbol\" \"$DEPLOYER_ADDRESS\""
+                else
+                    echo -e "${RED}错误: 请提供所有必需的参数${NC}"
+                fi
+            fi
+        fi
+    fi
+}
+
 # 主菜单循环
 while true; do
     echo -e "${YELLOW}=== Hardhat DApp 开发助手 ===${NC}"
@@ -138,8 +279,8 @@ while true; do
     echo -e "$(format_menu_item "2. 检查源码路径" "$CHECK_STATUS")"
     echo "3. 编译合约"
     echo "4. 运行测试"
-    echo -e "$(format_menu_item "5. 本地部署" "$DEPLOY_STATUS")"
-    echo -e "$(format_menu_item "6. 远程部署(Moonbase)" "$DEPLOY_STATUS")"
+    echo -e "$(format_menu_item "5. 部署合约" "$DEPLOY_STATUS")"
+    echo "6. 验证合约"
     echo -e "$(format_menu_item "7. 交互式调用(脚本)" "$INTERACT_STATUS")"
     echo "8. 交互式控制台"
     echo "9. 控制台常用命令参考"
@@ -169,18 +310,28 @@ while true; do
             execute_command "npx hardhat test"
             ;;
         5)
-            if can_execute "$SCRIPT_DEPLOY"; then
-                list_contracts
-                execute_command "npx hardhat run $SCRIPT_DEPLOY --network localhost"
-            fi
+            echo -e "${YELLOW}选择部署网络:${NC}"
+            echo "1. 本地网络"
+            echo "2. Moonbase 测试网"
+            read -p "请选择 [1-2]: " deploy_choice
+            case $deploy_choice in
+                1)
+                    deploy_contract "local"
+                    ;;
+                2)
+                    deploy_contract "moonbase"
+                    ;;
+                *)
+                    echo -e "${RED}无效的选择${NC}"
+                    ;;
+            esac
             ;;
         6)
-            if can_execute "$SCRIPT_DEPLOY"; then
-                list_contracts
-                execute_command "npx hardhat run $SCRIPT_DEPLOY --network moonbase"
-            fi
+            verify_contract
             ;;
         7)
+            ;;
+        6)
             if can_execute "$SCRIPT_INTERACT"; then
                 list_contracts
                 execute_command "npx hardhat run $SCRIPT_INTERACT --network moonbase"
